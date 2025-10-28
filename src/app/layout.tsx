@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { WatchlistProvider } from '@/context/WatchlistContext';
 
 export const metadata: Metadata = {
-  title: 'CineStream',
+  title: 'Bernieflix',
   description: 'Your world of movies.',
 };
 
