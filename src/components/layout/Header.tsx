@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/layout/Logo';
-import { SearchInput } from '@/components/search/SearchInput';
+import { Search } from '@/components/search/Search';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -20,7 +20,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 ml-4">
           <Logo />
         </div>
         <nav className="hidden items-center gap-2 md:flex">
@@ -39,7 +39,7 @@ export function Header() {
           ))}
         </nav>
         <div className="flex flex-1 items-center justify-end">
-          <SearchInput />
+          <Search />
         </div>
       </div>
     </header>
