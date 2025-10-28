@@ -32,6 +32,12 @@ export interface Video {
   published_at: string;
 }
 
+// Genre Type
+export interface Genre {
+  id: number;
+  name: string;
+}
+
 // API Response Types
 interface TmdbApiResult<T> {
   page: number;
@@ -44,7 +50,6 @@ interface TmdbVideosResult {
     id: number;
     results: Video[];
 }
-
 
 const fetchFromTmdb = async <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => {
   const url = new URL(`${TMDB_API_BASE_URL}${endpoint}`);
@@ -64,6 +69,16 @@ const fetchFromTmdb = async <T>(endpoint: string, params: Record<string, string>
   }
 
   return response.json();
+};
+
+export const getGenres = async (): Promise<Genre[]> => {
+  const data = await fetchFromTmdb<{ genres: Genre[] }>('/genre/movie/list');
+  return data.genres;
+};
+
+export const getMoviesByGenre = async (genreId: string): Promise<Movie[]> => {
+    const data = await fetchFromTmdb<TmdbApiResult<Movie[]>>('/discover/movie', { with_genres: genreId });
+    return data.results;
 };
 
 export const getTrendingMovies = async (time_window: 'day' | 'week' = 'week'): Promise<Movie[]> => {
