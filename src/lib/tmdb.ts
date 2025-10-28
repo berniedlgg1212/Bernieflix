@@ -18,6 +18,20 @@ export interface MovieDetails extends Movie {
   runtime: number;
 }
 
+// Video Type
+export interface Video {
+  id: string;
+  iso_639_1: string;
+  iso_3166_1: string;
+  key: string;
+  name: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+  published_at: string;
+}
+
 // API Response Types
 interface TmdbApiResult<T> {
   page: number;
@@ -25,6 +39,12 @@ interface TmdbApiResult<T> {
   total_pages: number;
   total_results: number;
 }
+
+interface TmdbVideosResult {
+    id: number;
+    results: Video[];
+}
+
 
 const fetchFromTmdb = async <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => {
   const url = new URL(`${TMDB_API_BASE_URL}${endpoint}`);
@@ -69,6 +89,11 @@ export const getNowPlayingMovies = async (): Promise<Movie[]> => {
 export const getMovieDetails = async (id: number): Promise<MovieDetails> => {
   return fetchFromTmdb<MovieDetails>(`/movie/${id}`, { append_to_response: 'credits' });
 };
+
+export const getMovieVideos = async (id: number): Promise<Video[]> => {
+    const data = await fetchFromTmdb<TmdbVideosResult>(`/movie/${id}/videos`);
+    return data.results;
+}
 
 export const searchMovies = async (query: string): Promise<Movie[]> => {
   const data = await fetchFromTmdb<TmdbApiResult<Movie[]>>('/search/movie', { query });

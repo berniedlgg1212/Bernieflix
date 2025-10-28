@@ -1,8 +1,9 @@
-import { getMovieDetails, getImageUrl } from '@/lib/tmdb';
+import { getMovieDetails, getMovieVideos, getImageUrl } from '@/lib/tmdb';
 import Image from 'next/image';
-import { Star, Clock } from 'lucide-react';
+import { Star, Clock, PlayCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { WatchlistButton } from '@/components/movies/WatchlistButton';
+import { TrailerDialog } from '@/components/movies/TrailerDialog';
 
 interface MovieDetailsPageProps {
   params: {
@@ -11,7 +12,11 @@ interface MovieDetailsPageProps {
 }
 
 export default async function MovieDetailsPage({ params }: MovieDetailsPageProps) {
-  const movie = await getMovieDetails(Number(params.id));
+  const movieId = Number(params.id);
+  const movie = await getMovieDetails(movieId);
+  const videos = await getMovieVideos(movieId);
+  
+  const trailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer' && v.official);
 
   const formatRuntime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -74,8 +79,9 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
 
             <p className="mt-8 text-base md:text-lg text-foreground/80 max-w-3xl leading-relaxed">{movie.overview}</p>
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap gap-4">
               <WatchlistButton movie={movie} variant="default" />
+              {trailer && <TrailerDialog trailer={trailer} />}
             </div>
           </div>
         </div>
