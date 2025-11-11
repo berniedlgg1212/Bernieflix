@@ -1,0 +1,134 @@
+/**
+ * @file Firestore Security Rules for Bernieflix
+ * @version Prototyping Mode - Authorization Focused
+ *
+ * @description
+ * This ruleset enforces a strict user-ownership model for user-specific data,
+ * while allowing public read access to movie data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles, accessible only to the owning user.
+ * - /movies/{movieId}: Stores movie details, publicly readable.
+ * - /users/{userId}/watchlist/{watchlistItemId}: Stores a user's watchlist items, accessible only to the owning user.
+ * - /keywords/{keywordId}: Stores unique keywords; access is public.
+ * - /movies/{movieId}/keywords/{keywordId}: Associates movies with keywords; public read access, owner-only write access (if an ownership field was present; see TODO).
+ * - /users/{userId}/keywords/{keywordId}: Stores keywords added by a user, accessible only to the owning user.
+ *
+ * Key Security Decisions:
+ * - User data is strictly controlled by the owning user.
+ * - Movie data is publicly readable to facilitate browsing, but write access is restricted based on potential ownership.
+ * - Listing of user-specific collections (watchlist, keywords) is allowed only for the owner.
+ * - The ruleset prioritizes simplicity and performance by denormalizing ownership data where necessary.
+ * - Data shape validation is relaxed to allow for rapid prototyping, focusing instead on authorization.
+ *
+ * Denormalization for Authorization:
+ * - User-specific data is nested under /users/{userId} to simplify ownership checks.
+ *
+ * Structural Segregation:
+ * - No drafts or published content; all data in a collection has the same access control requirements.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Manages access control for user profiles.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user creates their profile.
+     * @allow (get, update, delete) - Authenticated user accesses their profile.
+     * @deny (create) - An unauthenticated user attempts to create a profile.
+     * @deny (get, update, delete) - Authenticated user attempts to access another user's profile.
+     * @principle Enforces user ownership for profile data.
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages access control for movie details.
+     * @path /movies/{movieId}
+     * @allow (get, list) - Publicly readable movie data.
+     * @deny (create, update, delete) - No write access granted (assuming no ownership field).
+     * @principle Allows public read access to movie data.
+     */
+    match /movies/{movieId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Manages access control for watchlist items.
+     * @path /users/{userId}/watchlist/{watchlistItemId}
+     * @allow (create) - Authenticated user creates a watchlist item in their own list.
+     * @allow (get, list, update, delete) - Authenticated user manages their own watchlist items.
+     * @deny (create) - An unauthenticated user attempts to create a watchlist item.
+     * @deny (get, list, update, delete) - Authenticated user attempts to manage another user's watchlist items.
+     * @principle Enforces user ownership for watchlist data.
+     */
+    match /users/{userId}/watchlist/{watchlistItemId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages access control for keywords.
+     * @path /keywords/{keywordId}
+     * @allow (get, list) - Publicly readable keyword data.
+     * @deny (create, update, delete) - No write access granted.
+     * @principle Allows public read access to keywords.
+     */
+    match /keywords/{keywordId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Manages access control for movie keywords.
+     * @path /movies/{movieId}/keywords/{keywordId}
+     * @allow (get, list) - Publicly readable movie keyword associations.
+     * @deny (create, update, delete) - No write access granted (assuming no ownership field).
+     * @principle Allows public read access to movie keyword associations.
+     */
+    match /movies/{movieId}/keywords/{keywordId} {
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+    }
+
+    /**
+     * @description Manages access control for user-specific keywords.
+     * @path /users/{userId}/keywords/{keywordId}
+     * @allow (create) - Authenticated user creates a keyword in their list.
+     * @allow (get, list, update, delete) - Authenticated user manages their own keywords.
+     * @deny (create) - An unauthenticated user attempts to create a keyword.
+     * @deny (get, list, update, delete) - Authenticated user attempts to manage another user's keywords.
+     * @principle Enforces user ownership for user-specific keyword data.
+     */
+    match /users/{userId}/keywords/{keywordId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isSignedIn() && isOwner(userId) && resource != null;
+    }
+  }
+}

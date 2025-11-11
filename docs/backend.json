@@ -1,0 +1,288 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CineStream application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the user"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    },
+    "Movie": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Movie",
+      "type": "object",
+      "description": "Represents a movie in the CineStream application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the movie. This corresponds to the TMDb movie ID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the movie."
+        },
+        "overview": {
+          "type": "string",
+          "description": "A brief summary or synopsis of the movie."
+        },
+        "posterPath": {
+          "type": "string",
+          "description": "Relative path to the movie poster image."
+        },
+        "releaseDate": {
+          "type": "string",
+          "description": "The date when the movie was released.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "WatchlistItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WatchlistItem",
+      "type": "object",
+      "description": "Represents an item in a user's watchlist.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the watchlist item."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N WatchlistItem)"
+        },
+        "movieId": {
+          "type": "string",
+          "description": "Reference to Movie. (Relationship: Movie 1:N WatchlistItem)"
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the movie was added to the watchlist.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "movieId",
+        "addedAt"
+      ]
+    },
+    "Keyword": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Keyword",
+      "type": "object",
+      "description": "Represents a keyword associated with a movie.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the keyword."
+        },
+        "name": {
+          "type": "string",
+          "description": "The keyword itself (e.g., 'action', 'sci-fi')."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "MovieKeyword": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MovieKeyword",
+      "type": "object",
+      "description": "Associates keywords with movies.  Used for N:N relationship between movies and keywords.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MovieKeyword association."
+        },
+        "movieId": {
+          "type": "string",
+          "description": "Reference to Movie. (Relationship: Movie 1:N MovieKeyword)"
+        },
+        "keywordId": {
+          "type": "string",
+          "description": "Reference to Keyword. (Relationship: Keyword 1:N MovieKeyword)"
+        }
+      },
+      "required": [
+        "id",
+        "movieId",
+        "keywordId"
+      ]
+    },
+    "UserKeyword": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserKeyword",
+      "type": "object",
+      "description": "Associates keywords with users. Represents a user's saved keywords.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserKeyword association."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N UserKeyword)"
+        },
+        "keywordId": {
+          "type": "string",
+          "description": "Reference to Keyword. (Relationship: Keyword 1:N UserKeyword)"
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the keyword was added to the user's list.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "keywordId",
+        "addedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Contains basic information like email and display name.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/movies/{movieId}",
+        "definition": {
+          "entityName": "Movie",
+          "schema": {
+            "$ref": "#/backend/entities/Movie"
+          },
+          "description": "Stores movie details fetched from TMDb.",
+          "params": [
+            {
+              "name": "movieId",
+              "description": "The unique identifier for the movie, corresponding to the TMDb movie ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/watchlist/{watchlistItemId}",
+        "definition": {
+          "entityName": "WatchlistItem",
+          "schema": {
+            "$ref": "#/backend/entities/WatchlistItem"
+          },
+          "description": "Stores items in a user's watchlist.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "watchlistItemId",
+              "description": "The unique identifier for the watchlist item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/keywords/{keywordId}",
+        "definition": {
+          "entityName": "Keyword",
+          "schema": {
+            "$ref": "#/backend/entities/Keyword"
+          },
+          "description": "Stores unique keywords.",
+          "params": [
+            {
+              "name": "keywordId",
+              "description": "The unique identifier for the keyword."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/movies/{movieId}/keywords/{keywordId}",
+        "definition": {
+          "entityName": "MovieKeyword",
+          "schema": {
+            "$ref": "#/backend/entities/MovieKeyword"
+          },
+          "description": "Associates movies with keywords.",
+          "params": [
+            {
+              "name": "movieId",
+              "description": "The unique identifier for the movie."
+            },
+            {
+              "name": "keywordId",
+              "description": "The unique identifier for the keyword."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/keywords/{keywordId}",
+        "definition": {
+          "entityName": "UserKeyword",
+          "schema": {
+            "$ref": "#/backend/entities/UserKeyword"
+          },
+          "description": "Stores keywords added by a user to their list.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "keywordId",
+              "description": "The unique identifier for the keyword."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the Bernieflix application's movie browsing, keyword management, and personalized recommendations features. The structure prioritizes authorization independence and efficient data retrieval. Key aspects include:\n\n1.  **User-Owned Data:** User-specific data, such as keywords, are stored under the `/users/{userId}` path, ensuring clear ownership and simplified security rules. This leverages path-based ownership. Watchlist items also follow this pattern.\n\n2.  **Keyword Management:** Keywords are managed using the `Keyword` and `MovieKeyword` entities. The `Keyword` entity stores the unique keywords, while the `MovieKeyword` entity establishes the many-to-many relationship between movies and keywords.\n\n3.  **User Keywords:** The `UserKeyword` collection stores the keywords that users have added to their list, under the `/users/{userId}/keywords/{keywordId}` path. This ensures that each user's keywords are private and accessible only to them.\n\n4.  **Authorization Independence:** Denormalization is used to ensure authorization independence. Specifically, if access to movie keywords depended on movie ownership, the relevant movie attributes (e.g., ownerId, members) would be copied into each `MovieKeyword` document. In this design, we rely on the user ID for keyword management, eliminating the need for `get()` calls in security rules.\n\n5.  **QAPs (Rules are not Filters):** The structure supports secure `list` operations by ensuring that each collection contains documents with homogeneous security requirements.  For example, only the authenticated user can list keywords under their `/users/{userId}/keywords` collection.\n\n6. **Movie keywords:** Movie keywords are stored within a subcollection of the `movies` collection. This decision was made to support better listing of keywords and simplify QAPs, allowing for listing of movie keywords without requiring filtering."
+  }
+}
