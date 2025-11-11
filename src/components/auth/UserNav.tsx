@@ -18,9 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
+  signInAnonymously,
   signOut,
 } from 'firebase/auth';
 
@@ -29,11 +27,10 @@ export function UserNav() {
   const auth = useAuth();
 
   const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInAnonymously(auth);
     } catch (error) {
-      console.error('Error signing in with Google', error);
+      console.error('Error signing in anonymously', error);
     }
   };
 
@@ -67,7 +64,7 @@ export function UserNav() {
               alt={user.displayName ?? 'User'}
             />
             <AvatarFallback>
-              {user.displayName?.charAt(0).toUpperCase()}
+              {user.isAnonymous ? 'A' : user.displayName?.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -76,10 +73,10 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.displayName}
+              {user.isAnonymous ? 'Anonymous User' : user.displayName}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {user.uid}
             </p>
           </div>
         </DropdownMenuLabel>
