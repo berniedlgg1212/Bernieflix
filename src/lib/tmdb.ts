@@ -131,6 +131,16 @@ export const searchMovies = async (query: string): Promise<Movie[]> => {
   return data.results;
 };
 
+export const searchKeywords = async (query: string): Promise<Keyword[]> => {
+  const data = await fetchFromTmdb<TmdbApiResult<Keyword[]>>('/search/keyword', { query });
+  return data.results;
+}
+
+export const getMoviesByKeyword = async (keywordId: string): Promise<Movie[]> => {
+    const data = await fetchFromTmdb<TmdbApiResult<Movie[]>>('/discover/movie', { with_keywords: keywordId });
+    return data.results;
+};
+
 export const getMoviesByTitle = async (titles: string[]): Promise<Movie[]> => {
   const moviePromises = titles.map(async (title) => {
     const searchResults = await searchMovies(title);

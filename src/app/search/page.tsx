@@ -1,4 +1,4 @@
-import { searchMovies, getMoviesByGenre, getGenres } from '@/lib/tmdb'; // Assuming a function to get movies by keyword name exists
+import { searchMovies, getMoviesByKeyword, searchKeywords } from '@/lib/tmdb';
 import { MovieCard } from '@/components/movies/MovieCard';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
@@ -30,21 +30,21 @@ async function SearchResults({ query, keyword }: { query?: string, keyword?: str
                         ))}
                     </div>
                 ) : (
-                    <p className="text-muted-foreground text-lg mt-8 text-center">No movies found for "{query}".</p>
+                    <p className="text-muted-foreground text-lg mt-8 text-center">No movies found for "{query}". Try searching for an actor or keyword.</p>
                 )}
             </>
         );
     }
 
     if (keyword) {
-        const allGenres = await getGenres();
-        const genre = allGenres.find(g => g.name.toLowerCase() === keyword.toLowerCase());
-        
-        if (!genre) {
+        const keywords = await searchKeywords(keyword);
+        if (keywords.length === 0) {
              return <p className="text-muted-foreground text-lg mt-8 text-center">No movies found for keyword "{keyword}".</p>
         }
 
-        const movies = await getMoviesByGenre(String(genre.id));
+        // For simplicity, we'll just use the first keyword found
+        const firstKeyword = keywords[0];
+        const movies = await getMoviesByKeyword(String(firstKeyword.id));
         const validMovies = movies.filter(movie => movie.poster_path);
 
          return (
