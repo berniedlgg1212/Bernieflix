@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/layout/Header';
 import { WatchlistProvider } from '@/context/WatchlistContext';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Bernieflix',
@@ -25,13 +26,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
-        <WatchlistProvider>
-          <div className="relative flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-          </div>
-          <Toaster />
-        </WatchlistProvider>
+        <FirebaseClientProvider>
+          <WatchlistProvider>
+            <div className="relative flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+            </div>
+            <Toaster />
+          </WatchlistProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

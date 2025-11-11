@@ -38,6 +38,12 @@ export interface Genre {
   name: string;
 }
 
+// Keyword Type
+export interface Keyword {
+  id: number;
+  name: string;
+}
+
 // API Response Types
 interface TmdbApiResult<T> {
   page: number;
@@ -49,6 +55,11 @@ interface TmdbApiResult<T> {
 interface TmdbVideosResult {
     id: number;
     results: Video[];
+}
+
+interface TmdbKeywordsResult {
+    id: number;
+    keywords: Keyword[];
 }
 
 const fetchFromTmdb = async <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => {
@@ -108,6 +119,11 @@ export const getMovieDetails = async (id: number): Promise<MovieDetails> => {
 export const getMovieVideos = async (id: number): Promise<Video[]> => {
     const data = await fetchFromTmdb<TmdbVideosResult>(`/movie/${id}/videos`);
     return data.results;
+}
+
+export const getMovieKeywords = async (id: number): Promise<Keyword[]> => {
+    const data = await fetchFromTmdb<TmdbKeywordsResult>(`/movie/${id}/keywords`);
+    return data.keywords;
 }
 
 export const searchMovies = async (query: string): Promise<Movie[]> => {

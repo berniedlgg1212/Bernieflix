@@ -1,3 +1,4 @@
+// src/components/layout/Header.tsx
 "use client";
 
 import Link from 'next/link';
@@ -6,11 +7,14 @@ import { Logo } from '@/components/layout/Logo';
 import { Search } from '@/components/search/Search';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { UserNav } from '@/components/auth/UserNav';
+import { Suspense } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/genres', label: 'Genres' },
   { href: '/watchlist', label: 'My Watchlist' },
+  { href: '/my-keywords', label: 'My Keywords'},
   { href: '/recommendations', label: 'For You' },
 ];
 
@@ -38,8 +42,11 @@ export function Header() {
             </Button>
           ))}
         </nav>
-        <div className="flex flex-1 items-center justify-end">
-          <Search />
+        <div className="flex flex-1 items-center justify-end gap-4">
+          <Suspense fallback={<div className="w-full max-w-xs h-9" />}>
+            <Search />
+          </Suspense>
+          <UserNav />
         </div>
       </div>
     </header>

@@ -1,9 +1,11 @@
-import { getMovieDetails, getMovieVideos, getImageUrl } from '@/lib/tmdb';
+import { getMovieDetails, getMovieVideos, getImageUrl, getMovieKeywords } from '@/lib/tmdb';
 import Image from 'next/image';
 import { Star, Clock, PlayCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { WatchlistButton } from '@/components/movies/WatchlistButton';
 import { TrailerDialog } from '@/components/movies/TrailerDialog';
+import { KeywordsView } from '@/components/keywords/KeywordsView';
+import { Suspense } from 'react';
 
 interface MovieDetailsPageProps {
   params: {
@@ -84,6 +86,11 @@ export default async function MovieDetailsPage({ params }: MovieDetailsPageProps
               {trailer && <TrailerDialog trailer={trailer} />}
             </div>
           </div>
+        </div>
+        <div className="mt-12">
+            <Suspense fallback={<div className="text-center">Loading keywords...</div>}>
+                <KeywordsView movieId={movieId} />
+            </Suspense>
         </div>
       </div>
     </div>
