@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/layout/Header';
 import { WatchlistProvider } from '@/context/WatchlistContext';
 import { FirebaseClientProvider } from '@/firebase';
+import { PageTransition } from '@/components/layout/PageTransition';
 
 export const metadata: Metadata = {
   title: 'Bernieflix',
@@ -30,7 +31,11 @@ export default function RootLayout({
           <WatchlistProvider>
             <div className="relative flex min-h-screen flex-col">
               <Header />
-              <main className="flex-1">{children}</main>
+              <main className="flex-1">
+                <PageTransition>
+                  {children}
+                </PageTransition>
+              </main>
             </div>
             <Toaster />
           </WatchlistProvider>

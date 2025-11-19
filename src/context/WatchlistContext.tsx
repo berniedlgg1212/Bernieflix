@@ -1,10 +1,11 @@
 "use client";
 
 import type { Movie } from '@/lib/tmdb';
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react';
 
 interface WatchlistContextType {
   watchlist: Movie[];
+  setWatchlist: Dispatch<SetStateAction<Movie[]>>;
   addToWatchlist: (movie: Movie) => void;
   removeFromWatchlist: (movieId: number) => void;
   isInWatchlist: (movieId: number) => boolean;
@@ -54,12 +55,7 @@ export const WatchlistProvider = ({ children }: { children: ReactNode }) => {
       const storedWatchlist = localStorage.getItem('cinestream_watchlist');
       if (storedWatchlist) {
         const parsed = JSON.parse(storedWatchlist);
-        if (parsed.length > 0) {
-            setWatchlist(parsed);
-        } else {
-            setWatchlist(initialWatchlist);
-            updateLocalStorage(initialWatchlist);
-        }
+         setWatchlist(parsed);
       } else {
         setWatchlist(initialWatchlist);
         updateLocalStorage(initialWatchlist);
@@ -69,6 +65,14 @@ export const WatchlistProvider = ({ children }: { children: ReactNode }) => {
       setWatchlist(initialWatchlist);
     }
   }, []);
+  
+  useEffect(() => {
+    // This effect runs whenever the watchlist state changes, saving it to localStorage.
+    // It avoids saving the initial empty array on the first render.
+    if(watchlist.length > 0) {
+        updateLocalStorage(watchlist);
+    }
+  }, [watchlist])
 
   const updateLocalStorage = (updatedWatchlist: Movie[]) => {
     try {
@@ -83,18 +87,12 @@ export const WatchlistProvider = ({ children }: { children: ReactNode }) => {
       if (prevWatchlist.some(m => m.id === movie.id)) {
         return prevWatchlist;
       }
-      const updatedWatchlist = [...prevWatchlist, movie];
-      updateLocalStorage(updatedWatchlist);
-      return updatedWatchlist;
+      return [...prevWatchlist, movie];
     });
   };
 
   const removeFromWatchlist = (movieId: number) => {
-    setWatchlist(prevWatchlist => {
-      const updatedWatchlist = prevWatchlist.filter(movie => movie.id !== movieId);
-      updateLocalStorage(updatedWatchlist);
-      return updatedWatchlist;
-    });
+    setWatchlist(prevWatchlist => prevWatchlist.filter(movie => movie.id !== movieId));
   };
 
   const isInWatchlist = (movieId: number) => {
@@ -102,7 +100,7 @@ export const WatchlistProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <WatchlistContext.Provider value={{ watchlist, addToWatchlist, removeFromWatchlist, isInWatchlist }}>
+    <WatchlistContext.Provider value={{ watchlist, setWatchlist, addToWatchlist, removeFromWatchlist, isInWatchlist }}>
       {children}
     </WatchlistContext.Provider>
   );
