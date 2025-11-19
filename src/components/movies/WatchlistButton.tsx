@@ -47,7 +47,6 @@ export function WatchlistButton({ movie, variant = 'icon' }: WatchlistButtonProp
               size="icon"
               className="h-8 w-8 text-white hover:bg-white/20 hover:text-white rounded-full relative"
               onClick={handleToggleWatchlist}
-              onAnimationComplete={() => setIsAnimating(false)}
             >
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
@@ -57,6 +56,7 @@ export function WatchlistButton({ movie, variant = 'icon' }: WatchlistButtonProp
                   animate="animate"
                   exit="exit"
                   className="absolute"
+                  onAnimationComplete={() => setIsAnimating(false)}
                 >
                   {inWatchlist ? (
                     <CheckCircle className="h-5 w-5 text-accent" />
